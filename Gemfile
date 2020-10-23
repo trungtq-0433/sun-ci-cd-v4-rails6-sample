@@ -33,6 +33,7 @@ group :development, :test do
   gem 'brakeman', require: false
   gem 'bundler-audit'
   gem 'reek'
+  gem 'dotenv-rails'
 end
 
 group :development do
