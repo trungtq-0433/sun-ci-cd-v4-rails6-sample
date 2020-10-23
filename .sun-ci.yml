@@ -1,55 +1,85 @@
 workspace: true
 
 stages:
-- build
-- test
+  - build
+  - test
 
-jobs:
-- name: build:prepare
-  stage: build
-  image: sunci/ruby:2.5.1
-  script:
-  - cp database-ci.yml config/database.yml
-  - bundle _2.1.4_ install --path vendor/bundle
-  cache:
-  - key: vendor_$CI_BRANCH
-    paths:
-    - vendor/bundle
+  jobs:
+    # Prepare environment
+    - name: build:prepare
+      stage: build
+      image: tqtrung09/ruby2.7.1:latest
+      script:
+        - bundle _2.1.4_ install --path vendor/bundle
+      cache:
+        - key: vendor_$CI_BRANCH
+          paths:
+          - vendor/bundle
 
-- name: test:rspec
-  stage: test
-  image: sunci/ruby:2.5.1
-  services:
-  - redis:alpine
-  - image: postgres:12-alpine
-    name: postgresql
-    environment:
-    - POSTGRES_DB=xxx
-    - POSTGRES_USER=xxx
-    - POSTGRES_PASSWORD=secret
-  before_script:
-  - bundle _2.1.4_ install --path vendor/bundle
-  - mkdir .sun-ci
-  script:
-  - bundle _2.1.4_ exec rspec --format html --out .sun-ci/rspec.html spec/
-  only:
-    branches:
-    - milestone1
-  artifacts:
-    name: rspec_report
-    paths:
-    - .sun-ci
-    expires_in: 3 days
+    # Rspec => https://github.com/rspec/rspec-rails
+    - name: test:rspec
+      stage: test
+      image: tqtrung09/ruby2.7.1:latest
+      services:
+        - image: mysql:5.7.32
+          name: mysql
+          environment:
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_USER=root
+            - MYSQL_PASSWORD=Aa@123456
+            - MYSQL_DATABASE=sun_ci_cd_v4_rails6_sample_test
+      before_script:
+        - bundle _2.1.4_ install --path vendor/bundle
+        - mkdir .sun-ci-reports
+      script:
+        - bundle _2.1.4_ exec rspec --format html --out .sun-ci-reports/rspec.html spec/
+      artifacts:
+        name: rspec_report
+        paths:
+          - .sun-ci-reports/rspec.html
+        expires_in: 2 days
 
-- name: test:bundle_audit
-  stage: test
-  image: sunci/ruby:2.5.1
-  before_script:
-  - bundle _2.1.4_ install --path vendor/bundle
-  script:
-  - bundle-audit check --update
-  only:
-    branches:
-    - milestone1
+    # Bundle audit => https://github.com/rubysec/bundler-audit
+    - name: test:bundle_audit
+      stage: test
+      image: tqtrung09/ruby2.7.1:latest
+      before_script:
+        - bundle _2.1.4_ install --path vendor/bundle
+        - mkdir .sun-ci-reports
+      script:
+        - bundle _2.1.4_ exec bundle-audit check --update | tee .sun-ci-reports/bundle-audit.txt
+      artifacts:
+        name: bundle_audit_report
+        paths:
+          - .sun-ci-reports/bundle-audit.txt
+        expires_in: 2 days
 
+    # Brakeman => https://github.com/presidentbeef/brakeman
+    - name: test:brakeman
+      stage: test
+      image: tqtrung09/ruby2.7.1:latest
+      before_script:
+        - bundle _2.1.4_ install --path vendor/bundle
+        - mkdir .sun-ci-reports
+      script:
+        - bundle _2.1.4_ exec brakeman -o .sun-ci-reports/brakeman.html
+      artifacts:
+        name: brakeman_report
+        paths:
+          - .sun-ci-reports/brakeman.html
+        expires_in: 2 days
 
+    # Reek => https://github.com/troessner/reek
+    - name: test:reek
+      stage: test
+      image: tqtrung09/ruby2.7.1:latest
+      before_script:
+        - bundle _2.1.4_ install --path vendor/bundle
+        - mkdir .sun-ci-reports
+      script:
+        - bundle _2.1.4_ exec reek | tee .sun-ci-reports/reek.txt
+      artifacts:
+        name: bundle_audit_report
+        paths:
+          - .sun-ci-reports/reek.txt
+        expires_in: 2 days
