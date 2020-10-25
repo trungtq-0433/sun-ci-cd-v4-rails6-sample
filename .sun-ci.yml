@@ -1,0 +1,77 @@
+workspace: true
+
+stages:
+  - build
+  - test
+
+jobs:
+  # Prepare environment
+  - name: build:prepare
+    stage: build
+    image: tqtrung09/ruby2.7.1:latest
+    script:
+      - bundle _2.1.4_ config set path "vendor/bundle"
+      - bundle _2.1.4_ install
+    cache:
+      - key: vendor_$CI_BRANCH
+        paths:
+        - vendor/bundle
+
+  # Rspec => https://github.com/rspec/rspec-rails
+  - name: test:rspec
+    stage: test
+    image: tqtrung09/ruby2.7.1:latest
+    environment:
+      - RAILS_ENV=test # Must specific test environment
+      - DATABASE_HOST=mysql_test # Same value line 30
+      - DATABASE_USERNAME=mysql_user # Same value line 33
+      - DATABASE_PASSWORD=mysql_password # Same value line 34
+    services:
+      - image: mysql:5.7.32
+        name: mysql_test
+        environment:
+          - MYSQL_ROOT_PASSWORD=root
+          - MYSQL_USER=mysql_user
+          - MYSQL_PASSWORD=mysql_password
+          - MYSQL_DATABASE=sun_ci_cd_v4_rails6_sample_test # Same value database test name in database.yml
+    before_script:
+      - bundle _2.1.4_ config set path "vendor/bundle"
+      - bundle _2.1.4_ install
+      - bundle _2.1.4_ exec rake db:create
+    script:
+      - bundle _2.1.4_ exec rspec --format html --out rspec.html spec/
+    artifacts:
+      name: rspec_report
+      paths:
+        - rspec.html
+      expires_in: 2 days
+
+  # Bundle audit => https://github.com/rubysec/bundler-audit
+  - name: test:bundle_audit
+    stage: test
+    image: tqtrung09/ruby2.7.1:latest
+    before_script:
+      - bundle _2.1.4_ config set path "vendor/bundle"
+      - bundle _2.1.4_ install
+    script:
+      - bundle _2.1.4_ exec bundle-audit check --update | tee bundle-audit.txt
+    artifacts:
+      name: bundle_audit_report
+      paths:
+        - bundle-audit.txt
+      expires_in: 2 days
+
+  # Brakeman => https://github.com/presidentbeef/brakeman
+  - name: test:brakeman
+    stage: test
+    image: tqtrung09/ruby2.7.1:latest
+    before_script:
+      - bundle _2.1.4_ config set path "vendor/bundle"
+      - bundle _2.1.4_ install
+    script:
+      - bundle _2.1.4_ exec brakeman -o brakeman.html
+    artifacts:
+      name: brakeman_report
+      paths:
+        - brakeman.html
+      expires_in: 2 days

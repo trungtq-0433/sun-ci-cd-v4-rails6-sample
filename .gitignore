@@ -35,3 +35,8 @@
 yarn-debug.log*
 .yarn-integrity
 .env
+
+# Report files
+rspec.html
+bundle-audit.txt
+brakeman.html
