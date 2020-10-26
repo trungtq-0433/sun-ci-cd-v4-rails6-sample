@@ -40,3 +40,4 @@ yarn-debug.log*
 rspec.html
 bundle-audit.txt
 brakeman.html
+rubocop.html
