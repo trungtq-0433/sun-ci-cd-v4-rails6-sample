@@ -1,0 +1,25 @@
+# All of the cop using the default configuration. Of need custom, follow this file:
+# https://github.com/rubocop-hq/rubocop/blob/v1.0.0/config/default.yml
+require:
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-rspec
+
+AllCops:
+  NewCops: enable
+  Exclude:
+    - 'db/*.rb'
+    - 'bin/*'
+
+############# DISABLE #############
+Style/Documentation:
+  Enabled: false
+Style/BlockComments:
+  Enabled: false
+
+############# CUSTOM #############
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Rails/FilePath:
+  EnforcedStyle: arguments
