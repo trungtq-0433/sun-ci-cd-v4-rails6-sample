@@ -8,8 +8,9 @@ require:
 AllCops:
   NewCops: enable
   Exclude:
-    - 'db/*.rb'
-    - 'bin/*'
+    - db/*.rb
+    - bin/*
+    - vendor/bundle/**/* # https://github.com/rubocop-hq/rubocop/issues/6398#issuecomment-431698999
 
 ############# DISABLE #############
 Style/Documentation:

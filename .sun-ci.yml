@@ -39,7 +39,7 @@ jobs:
       - bundle _2.1.4_ install
       - bundle _2.1.4_ exec rake db:create
     script:
-      - bundle _2.1.4_ exec rspec --format html --out rspec.html spec/
+      - bundle _2.1.4_ exec rspec --format html --out rspec.html
     artifacts:
       name: rspec_report
       paths:
@@ -74,4 +74,19 @@ jobs:
       name: brakeman_report
       paths:
         - brakeman.html
+      expires_in: 2 days
+
+  # Rubocop => https://github.com/rubocop-hq/rubocop
+  - name: test:rubocop
+    stage: test
+    image: tqtrung09/ruby2.7.1:latest
+    before_script:
+      - bundle _2.1.4_ config set path "vendor/bundle"
+      - bundle _2.1.4_ install
+    script:
+      - bundle _2.1.4_ exec rubocop --format html -o rubocop.html
+    artifacts:
+      name: rubocop_report
+      paths:
+        - rubocop.html
       expires_in: 2 days
