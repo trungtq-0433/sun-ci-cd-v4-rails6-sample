@@ -6,6 +6,11 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby "2.7.1"
 
 gem "bootsnap", ">= 1.4.2", require: false
+gem "capistrano", "~> 3.10", require: false
+gem "capistrano3-puma"
+gem "capistrano-bundler", "~> 2.0"
+gem "capistrano-rails", "~> 1.6", require: false
+gem "capistrano-rvm"
 gem "jbuilder", "~> 2.7"
 gem "mysql2", ">= 0.4.4"
 gem "puma", "~> 4.1"
