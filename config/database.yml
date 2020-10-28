@@ -16,6 +16,7 @@ default: &default
   host: <%= ENV["DATABASE_HOST"] %> # Need it for running CI, mapping service name
   username: <%= ENV["DATABASE_USERNAME"] %>
   password: <%= ENV["DATABASE_PASSWORD"] %>
+  port: 3306
 
 development:
   <<: *default
@@ -47,8 +48,11 @@ test:
 #   production:
 #     url: <%= ENV['DATABASE_URL'] %>
 #
+
+staging:
+  <<: *default
+  database: sun_ci_cd_v4_rails6_sample_staging
+
 production:
   <<: *default
   database: sun_ci_cd_v4_rails6_sample_production
-  username: sun_ci_cd_v4_rails6_sample
-  password: <%= ENV['SUN_CI_CD_V4_RAILS6_SAMPLE_DATABASE_PASSWORD'] %>
