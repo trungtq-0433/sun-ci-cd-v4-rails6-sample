@@ -11,6 +11,11 @@ AllCops:
     - db/*.rb
     - bin/*
     - vendor/bundle/**/* # https://github.com/rubocop-hq/rubocop/issues/6398#issuecomment-431698999
+    - config/deploy/*
+    - config/deploy.rb
+    - deploy/*
+    - Capfile
+    - node_modules/**/*
 
 ############# DISABLE #############
 Style/Documentation:
