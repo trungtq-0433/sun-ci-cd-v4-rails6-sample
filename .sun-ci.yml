@@ -17,6 +17,9 @@ jobs:
       - key: vendor_$CI_BRANCH
         paths:
         - vendor/bundle
+    only:
+      events:
+        - pull_request
 
   # Rspec => https://github.com/rspec/rspec-rails
   - name: test:rspec
@@ -46,6 +49,9 @@ jobs:
       paths:
         - rspec.html
       expires_in: 2 days
+    only:
+      events:
+        - pull_request
 
   # Bundle audit => https://github.com/rubysec/bundler-audit
   - name: test:bundle_audit
@@ -61,6 +67,9 @@ jobs:
       paths:
         - bundle-audit.txt
       expires_in: 2 days
+    only:
+      events:
+        - pull_request
 
   # Brakeman => https://github.com/presidentbeef/brakeman
   - name: test:brakeman
@@ -76,6 +85,9 @@ jobs:
       paths:
         - brakeman.html
       expires_in: 2 days
+    only:
+      events:
+        - pull_request
 
   # Rubocop => https://github.com/rubocop-hq/rubocop
   - name: test:rubocop
@@ -91,17 +103,31 @@ jobs:
       paths:
         - rubocop.html
       expires_in: 2 days
+    only:
+      events:
+        - pull_request
 
   - name: deploy:staging
     stage: deploy
     image: tqtrung09/ruby2.7.1:latest
     before_script:
-      - bundle _2.1.4_ config set path "vendor/bundle"
-      - bundle _2.1.4_ install
+      - mkdir /root/.ssh
+      # $STAGING_SSH_PRIVATE_KEY, STAGING_IP, STAGING_USER was set on secret CI tool
+      - echo "$STAGING_SSH_PRIVATE_KEY" > /root/.ssh/id_rsa
+      - chmod 700 -R /root/.ssh
+      - chmod 600 -R /root/.ssh/*
+      # Are you sure you want to continue connecting (yes/no)? yes
+      # Warning: Permanently added '13.250.3.216' (ECDSA) to the list of known hosts.
+      - ssh-keyscan -H $STAGING_IP >> ~/.ssh/known_hosts
     script:
-      - bundle _2.1.4_ exec DEPLOY_TYPE=itself DEPLOY_REF=config-capistrano cap staging deploy
+      # Becuz, each script - each session, so we need embed command in single quote
+      # (not double quote, becuz "" using variable current computer)
+      #
+      # Becuz, when using ssh user@ip 'command'. That is non-interactive and non-login shell.
+      # So, we need manual pass command to rbenv/rvm by dir /home/deploy/.rbenv/shims/cap
+      - ssh -i /root/.ssh/id_rsa $STAGING_USER@$STAGING_IP 'cd /home/deploy/sun-ci-cd-v4-rails6-sample/ && DEPLOY_TYPE=itself DEPLOY_REF=main /home/deploy/.rbenv/shims/cap staging deploy'
     only:
       branches:
-        - main
+        - main # mapping with DEPLOY_REF value
       events:
         - push
