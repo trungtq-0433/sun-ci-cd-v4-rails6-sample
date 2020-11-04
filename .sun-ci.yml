@@ -3,6 +3,7 @@ workspace: true
 stages:
   - build
   - test
+  - deploy
 
 jobs:
   # Prepare environment
@@ -90,3 +91,17 @@ jobs:
       paths:
         - rubocop.html
       expires_in: 2 days
+
+  - name: deploy:staging
+    stage: deploy
+    image: tqtrung09/ruby2.7.1:latest
+    before_script:
+      - bundle _2.1.4_ config set path "vendor/bundle"
+      - bundle _2.1.4_ install
+    script:
+      - bundle _2.1.4_ exec DEPLOY_TYPE=itself DEPLOY_REF=config-capistrano cap staging deploy
+    only:
+      branches:
+        - main
+      events:
+        - push
